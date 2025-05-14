@@ -12,7 +12,7 @@ import {
 type Props = {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  openSidebar: boolean;
+  // openSidebar: boolean;
   // setOpenSidebar: (status: boolean) => void;
 };
 
@@ -73,8 +73,9 @@ const sidebar = (props: Props) => {
           </Button>
           <Button
             active={props.activeTab === "report" ? true : false}
-            // TODO сделать переход на создание иссью в гитхабе
-            onClick={() => {}}
+            onClick={() => {
+              window.runtime.BrowserOpenURL("https://github.com/LeoonWi/oscillation-rk4/issues/new");
+            }}
           >
             <BugAntIcon className="w-6" />
           </Button>

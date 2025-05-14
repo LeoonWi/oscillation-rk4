@@ -22,10 +22,7 @@ export type ListSimulation = {
 
 function App() {
   const [activeTab, setActiveTab] = useState("home");
-  const [openSidebar, setOpenSidebar] = useState(false);
-
   const [status, setStatus] = useState("Stop");
-
   const [simulationData, setSimulationData] = useState<SimulationData[]>([]);
   const [listSimulation, setListSimulation] = useState<ListSimulation[]>([]);
 
@@ -63,8 +60,6 @@ function App() {
         <Sidebar
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          openSidebar={openSidebar}
-          // setOpenSidebar={setOpenSidebar}
         />
         <Content>
           {activeTab === "home" ? (
