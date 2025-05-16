@@ -22,11 +22,11 @@ type App struct {
 	x                 float64 // Переменная x
 	y                 float64 // Переменная y
 	alpha             float64 // Параметры модели
-	beta              float64
-	delta             float64
-	gamma             float64
-	dt                float64 // Шаг времени
-	tEnd              float64 // Конечное время
+	beta              float64 // Параметры модели
+	delta             float64 // Параметры модели
+	gamma             float64 // Параметры модели
+	dt                float64 // Шаг времени в секундах
+	tEnd              float64 // Конечное время в секундах
 	wg                sync.WaitGroup
 }
 
@@ -37,14 +37,14 @@ func NewApp() *App {
 		stopped:           true,
 		paused:            false,
 		t:                 0,
-		x:                 10.0, // Начальные значения
+		x:                 10.0,
 		y:                 5.0,
-		alpha:             1.0, // Значения параметров
+		alpha:             1.0,
 		beta:              0.1,
 		delta:             0.075,
 		gamma:             1.5,
-		dt:                1.0,  // Шаг времени в секундах
-		tEnd:              10.0, // Конечное время
+		dt:                1.0,
+		tEnd:              10.0,
 	}
 }
 
@@ -60,10 +60,12 @@ func (a *App) shutdown() {
 	a.wg.Wait() // Ждём завершения горутин
 }
 
+// Вызов события на сервере для обновления статуса симуляции (Pull)
 func (a *App) GetStatus() {
 	a.emitStatus()
 }
 
+// Сброс всех параметров на значения по умолчанию (Pull)
 func (a *App) Reset() {
 	a.simulationRunning = false
 	a.stopped = true
@@ -79,7 +81,7 @@ func (a *App) Reset() {
 	a.tEnd = 10.0
 }
 
-// Отправка статуса
+// Отправка события для обновления статуса симуляции (Push)
 func (a *App) emitStatus() {
 	var status string
 	if a.stopped {
@@ -94,7 +96,7 @@ func (a *App) emitStatus() {
 	})
 }
 
-// Запуск симуляции
+// Запуск симуляции (Pull)
 func (a *App) Start() {
 	if a.simulationRunning && !a.paused {
 		return // Симуляция уже работает и не на паузе
@@ -113,13 +115,13 @@ func (a *App) Start() {
 	a.emitStatus()
 }
 
-// Приостановка симуляци на паузу
+// Приостановка симуляци на паузу (Pull)
 func (a *App) Pause() {
 	a.paused = true
 	a.emitStatus()
 }
 
-// Полная остановка симуляции
+// Полная остановка симуляции (Pull)
 func (a *App) Stop() {
 	a.simulationRunning = false
 	a.paused = false
@@ -178,13 +180,18 @@ func (a *App) simulation() {
 	}
 }
 
+// метод обработки обновления параметров симуляции
 func (a *App) handleUpdateConfig(params interface{}) error {
+	// получение данных
 	data, ok := params.(map[string]interface{})
 	if !ok {
 		return fmt.Errorf("invalid config data: expected map")
 	}
 
+	// список обязательных полей
 	requiredFields := []string{"a", "b", "d", "g", "x", "y", "max", "step"}
+
+	// валидация
 	for _, field := range requiredFields {
 		val, ok := data[field]
 		if !ok {
@@ -206,6 +213,7 @@ func (a *App) handleUpdateConfig(params interface{}) error {
 		return fmt.Errorf("tEnd must be positive")
 	}
 
+	// обновление параметров
 	a.alpha = data["a"].(float64)
 	a.beta = data["b"].(float64)
 	a.delta = data["d"].(float64)
